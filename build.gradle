@@ -1,0 +1,76 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+ 
+sourceCompatibility = 1.7
+ 
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+ 
+group = 'com.ai.runner'
+ 
+repositories {
+    maven{ url "http://10.1.228.199:18081/nexus/content/groups/public/"  }
+    maven{ url "http://10.1.228.199:18081/nexus/content/repositories/conjars/"  }
+}
+
+configurations.all {
+}
+
+configurations {
+   provided
+   compile.extendsFrom provided
+}
+
+dependencies{
+	// 单包，无第三方依赖   	
+    //compile 'org.json:json:20140107'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'mysql:mysql-connector-java:5.1.34'
+    compile 'log4j:log4j:1.2.17'
+    
+    // 平台产品依赖
+    compile 'com.ai:ipaas-rcs:0.2.4.13-SNAPSHOT'
+    compile 'com.ai:ipaas-mds:0.2-SNAPSHOT'
+    compile 'com.ai:ipaas-mcs:0.2.2.1-SNAPSHOT'
+    compile 'com.ai.runner.center.dshm:dshmservice:1.0.1-SNAPSHOT'
+    
+    // 框架级依赖
+    compile 'org.apache.kafka:kafka_2.10:0.8.2.1'
+    compile 'org.apache.storm:storm-kafka:0.9.3'
+    compile 'org.quartz-scheduler:quartz:2.2.1'
+    compile 'commons-configuration:commons-configuration:1.6'
+    compile 'org.codehaus.groovy:groovy-all:2.2.2'
+    compile 'org.apache.hbase:hbase-client:1.1.2'
+    compile 'commons-dbutils:commons-dbutils:1.5'
+    
+    // 不打包依赖
+    provided 'org.apache.storm:storm-core:0.9.3'
+    provided 'org.apache.logging.log4j:log4j:2.2'
+    provided 'org.apache.logging.log4j:log4j-slf4j-impl:2.2'
+    provided 'org.slf4j:slf4j-api:1.7.7'
+    provided 'org.slf4j:slf4j-log4j12:1.7.5'
+    
+    testCompile 'junit:junit:4.12'
+}
+
+jar {
+    dependsOn configurations.runtime
+    from {
+        (configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    {
+    	exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+          
+}
+
+sourceSets {
+    main {
+        java { srcDirs = ['src/main/java']}
+        resources { srcDirs = ['src/main/resources']}
+    }
+}
